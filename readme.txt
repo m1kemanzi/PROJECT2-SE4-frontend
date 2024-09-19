@@ -1,1 +1,0 @@
-This is the project repository for the Course Listing Project.
