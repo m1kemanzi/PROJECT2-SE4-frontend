@@ -6,7 +6,7 @@
   const courses = ref([]);
   const message = ref("Search, Edit or Delete Courses");
 
-  const retrieveTutorials = () => {
+  const retrieveCourses = () => {
     courseServices.getAllCourses()
       .then((response) => {
         courses.value = response.data;
@@ -16,7 +16,7 @@
       });
   };
 
-  retrieveTutorials();
+  retrieveCourses();
 
   function addNewCourse() {
     console.log("Add New Course button clicked");
@@ -43,9 +43,9 @@
             <tr v-for="(item) in courses" :key="item.title">
               <td>{{ item.Name }}</td>
               <td>
-                <i class="mdi mdi-pencil mx-4" @click="editTutorial(item)"></i>
-                <i class="mdi mdi-format-list-bulleted-type mx-4" @click="viewTutorial(item)"></i>
-                <i class="mdi mdi-trash-can mx-4" @click="deleteTutorial(item)"></i>
+                <i class="mdi mdi-pencil mx-4" @click="editCourse(item)"></i>
+                <i class="mdi mdi-format-list-bulleted-type mx-4" @click="viewCourse(item)"></i>
+                <i class="mdi mdi-trash-can mx-4" @click="deleteCourse(item)"></i>
               </td>
             </tr>
           </tbody>
