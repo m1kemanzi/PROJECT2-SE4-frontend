@@ -27,6 +27,8 @@
 
     <div class="course-container">
       <h2>Courses</h2>
+      <button @click="addNewCourse" class="btn btn-maroon">Add New Course</button>
+
       <div class="container">
   <br /><br />
   <div class="card">
@@ -53,7 +55,6 @@
   </div>
 </div>
 
-      <button @click="addNewCourse" class="btn btn-maroon">Add New Course</button>
     </div>
   </template>
   
