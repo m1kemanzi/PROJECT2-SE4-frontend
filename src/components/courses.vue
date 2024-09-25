@@ -27,32 +27,32 @@
 
     <div class="course-container">
       <h2>Courses</h2>
-      <div>
-    <v-container>
-      <br /><br />
-      <v-card>
-        <v-table>
-          <thead>
-            <tr>
-              <th class="text-left">Name</th>
-              <th class="text-left">Actions</th>
-
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item) in courses" :key="item.title">
-              <td>{{ item.Name }}</td>
-              <td>
-                <i class="mdi mdi-pencil mx-4" @click="editCourse(item)"></i>
-                <i class="mdi mdi-format-list-bulleted-type mx-4" @click="viewCourse(item)"></i>
-                <i class="mdi mdi-trash-can mx-4" @click="deleteCourse(item)"></i>
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-      </v-card>
-    </v-container>
+      <div class="container">
+  <br /><br />
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="text-left">Name</th>
+            <th class="text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item) in courses" :key="item.title">
+            <td>{{ item.Name }}</td>
+            <td>
+              <i class="fas fa-pencil-alt mx-4" @click="editCourse(item)"></i>
+              <i class="fas fa-list-ul mx-4" @click="viewCourse(item)"></i>
+              <i class="fas fa-trash mx-4" @click="deleteCourse(item)"></i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+</div>
+
       <button @click="addNewCourse" class="btn btn-maroon">Add New Course</button>
     </div>
   </template>
