@@ -5,16 +5,22 @@
 
   const courses = ref([]);
   const message = ref("Search, Edit or Delete Courses");
+  const currentPage = ref(1);
+  const pageSize = ref(20); // Show 20 courses per page by default
+  const totalCourses = ref(0);
 
-  const retrieveCourses = () => {
-    courseServices.getAllCourses()
-      .then((response) => {
-        courses.value = response.data;
-      })
-      .catch((e) => {
-        message.value = e.response.data.message;
-      });
-  };
+  const retrieveCourses = (page = 1) => {
+  courseServices.getAllCourses(page, pageSize.value)
+    .then((response) => {
+      courses.value = response.data.courses;
+      totalCourses.value = response.data.totalCourses;
+      currentPage.value = response.data.currentPage;
+    })
+    .catch((e) => {
+      message.value = e.response.data.message;
+    });
+};
+
 
   retrieveCourses();
 
@@ -54,6 +60,14 @@
     </div>
   </div>
 </div>
+<div class="pagination">
+  <button :disabled="currentPage === 1" @click="retrieveCourses(currentPage - 1)">
+    Previous
+  </button>
+  <button :disabled="lastPageReached" @click="retrieveCourses(currentPage + 1)">
+    Next
+  </button>
+</div>
 
     </div>
   </template>
@@ -92,5 +106,25 @@
   p {
     color: #6c757d;
   }
+  .pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  background-color: #800000;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
   </style>
   

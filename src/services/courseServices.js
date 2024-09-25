@@ -1,9 +1,14 @@
 import apiClient from "./services.js";
 
 export default {
-  getAllCourses() {
-    return apiClient.get(`/courses/`);
-  },
+  getAllCourses(page = 1, limit = 20) {
+    return apiClient.get(`/courses`, {
+      params: {
+        page: page,
+        limit: limit
+      }
+    });
+  },  
   getCourse(id) {
     return apiClient.get(`/courses/${id}`);
   },
