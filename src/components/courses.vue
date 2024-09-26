@@ -76,6 +76,7 @@ const openModal = () => {
 
 const closeModal = () => {
   showModal.value = false;
+  retrieveCourses();
 };
 
 retrieveCourses();
