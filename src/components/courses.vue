@@ -78,11 +78,6 @@ const closeModal = () => {
   showModal.value = false;
   retrieveCourses();
 };
-
-  function addNewCourse() {
-    console.log("Add New Course button clicked");
-  }
-
   function deleteCourse(item) {
     if(confirm(`Are you sure you want to delete ${item.Name}?`)) {
       courseServices.deleteCourse(item.id)
@@ -97,6 +92,7 @@ const closeModal = () => {
     };
 
   }
+  retrieveCourses();
   </script>
 
 
