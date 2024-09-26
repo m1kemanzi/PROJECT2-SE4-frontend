@@ -5,6 +5,7 @@ import AddCourseModal from "../components/newCourse.vue";
 
 const courses = ref([]);
 const message = ref("Search, Edit or Delete Courses");
+const searchQuery = ref("");  // Add searchQuery to store the search input
 
 const showModal = ref(false);  
 const currentPage = ref(1); 
@@ -21,14 +22,21 @@ const retrieveCourses = () => {
     });
 };
 
+const filteredCourses = computed(() => {
+  if (!searchQuery.value) return courses.value; // If no search, return all courses
+  return courses.value.filter(course => 
+    course.Name.toLowerCase().includes(searchQuery.value.toLowerCase())  // Filter by name
+  );
+});
+
 const totalPages = computed(() => {
-  return Math.ceil(courses.value.length / coursesPerPage);
+  return Math.ceil(filteredCourses.value.length / coursesPerPage);
 });
 
 const paginatedCourses = computed(() => {
   const start = (currentPage.value - 1) * coursesPerPage;
   const end = start + coursesPerPage;
-  return courses.value.slice(start, end);
+  return filteredCourses.value.slice(start, end);
 });
 
 const pageNumbers = computed(() => {
@@ -70,28 +78,18 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-const handleAddCourse = (newCourse) => {
-  courseServices.createCourse(newCourse)
-    .then(() => {
-      retrieveCourses(); 
-      closeModal();       
-    })
-    .catch((e) => {
-      console.error(e.response.data.message);
-    });
-};
-
 retrieveCourses();
 </script>
 
 <template>
   <div class="course-container">
     <h2>Courses</h2>
+    <input v-model="searchQuery" type="text" placeholder="Search courses by Name" class="search-input"/>  <!-- Search input -->
+    <br>
     <button @click="openModal" class="btn btn-maroon">Add New Course</button>
 
     <AddCourseModal 
       :showModal="showModal" 
-      @add-course="handleAddCourse"
       @close-modal="closeModal"
     />
 
@@ -207,5 +205,15 @@ h2 {
   margin: 0 5px;
   color: #800000;
   font-weight: bold;
+}
+
+/* Additional style for the search input */
+.search-input {
+  margin-bottom: 20px;
+  padding: 10px;
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 </style>

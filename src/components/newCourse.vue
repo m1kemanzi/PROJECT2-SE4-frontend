@@ -33,20 +33,23 @@
             <textarea v-model="newCourse.Description" id="description" required></textarea>
           </div>
   
-          <button type="submit" class="btn btn-maroon">Submit</button>
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+          <!-- Disable the button when submitting -->
+          <button type="submit" class="btn btn-maroon" :disabled="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+          </button>
+          <button type="button" class="btn btn-secondary" @click="closeModal" :disabled="isSubmitting">Close</button>
         </form>
       </div>
     </div>
   </template>
   
   <script>
-  import courseService from '../services/courseServices'; 
+  import courseService from '../services/courseServices';
   
   export default {
     name: 'AddCourseModal',
     props: {
-      showModal: Boolean,  
+      showModal: Boolean,
     },
     data() {
       return {
@@ -58,35 +61,45 @@
           Name: "",
           Description: ""
         },
-        isSubmitting: false  
+        isSubmitting: false // Prevents multiple submissions
       };
     },
     methods: {
       submitNewCourse() {
-        this.isSubmitting = true;  
-        
+        // Prevent submission if it's already in progress
+        if (this.isSubmitting) return;
+  
+        // Start submission
+        this.isSubmitting = true;
+  
+        // Call the course service to create the new course
         courseService.createCourse(this.newCourse)
           .then(response => {
             console.log('Course created:', response.data);
-            
+  
+            // Emit the new course data back to the parent component
             this.$emit('add-course', response.data);
-            
+  
+            // Reset the form fields
             this.resetNewCourse();
-            
+  
+            // Close the modal
             this.closeModal();
-            console.log()
           })
           .catch(error => {
             console.error('There was an error creating the course:', error);
           })
           .finally(() => {
-            this.isSubmitting = false;  
+            // Set the submitting flag to false after everything is done
+            this.isSubmitting = false;
           });
       },
       closeModal() {
-        this.$emit('close-modal'); 
+        // Emit the close event to the parent
+        this.$emit('close-modal');
       },
       resetNewCourse() {
+        // Reset the form fields to be empty again
         this.newCourse = {
           Dept: "",
           Course_number: "",
@@ -111,7 +124,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; 
+    z-index: 1000;
   }
   
   .modal-content {
@@ -121,7 +134,7 @@
     max-width: 500px;
     width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1001; 
+    z-index: 1001;
   }
   
   .form-group {
