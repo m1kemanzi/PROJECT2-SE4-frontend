@@ -79,8 +79,26 @@ const closeModal = () => {
   retrieveCourses();
 };
 
-retrieveCourses();
-</script>
+  function addNewCourse() {
+    console.log("Add New Course button clicked");
+  }
+
+  function deleteCourse(item) {
+    if(confirm(`Are you sure you want to delete ${item.Name}?`)) {
+      courseServices.deleteCourse(item.id)
+      .then(() => {
+        courses.value = courses.value.filter(course => course.id !== item.id);
+        alert(`${item.Name} has been deleted succesfully!`);
+        retrieveCourses();
+      })
+      .catch((e) => {
+        message.value = e.response.data.message;
+      });
+    };
+
+  }
+  </script>
+
 
 <template>
   <div class="course-container">
