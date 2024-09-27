@@ -1,16 +1,21 @@
 <script setup>
 import { ref, computed } from "vue";
 import courseServices from "../services/courseServices.js";
-import AddCourseModal from "../components/newCourse.vue";  
-
+import AddCourseModal from "../components/newCourse.vue";
 const courses = ref([]);
 const message = ref("Search, Edit or Delete Courses");
-const searchQuery = ref("");  // Add searchQuery to store the search input
+const searchQuery = ref("");
 
-const showModal = ref(false);  
-const currentPage = ref(1); 
-const coursesPerPage = 8;    
-const maxVisiblePages = 5;  
+const showModal = ref(false);
+const showFilterModal = ref(false); // Controls the visibility of the filter modal
+const currentPage = ref(1);
+const coursesPerPage = 8;
+const maxVisiblePages = 5;
+
+const selectedDepartments = ref([]); // Stores selected departments for filtering
+const selectedLevels = ref([]);      // Stores selected levels for filtering
+
+const fileInput = ref(null);
 
 const retrieveCourses = () => {
   courseServices.getAllCourses()
@@ -22,11 +27,39 @@ const retrieveCourses = () => {
     });
 };
 
+// Compute unique list of departments from courses
+const departments = computed(() => {
+  const deptSet = new Set(courses.value.map(course => course.department).filter(Boolean));
+  return Array.from(deptSet);
+});
+
+// Compute unique list of levels from courses
+const levels = computed(() => {
+  const levelSet = new Set(courses.value.map(course => course.level).filter(Boolean));
+  return Array.from(levelSet);
+});
+
 const filteredCourses = computed(() => {
-  if (!searchQuery.value) return courses.value; // If no search, return all courses
-  return courses.value.filter(course => 
-    course.Name.toLowerCase().includes(searchQuery.value.toLowerCase())  // Filter by name
-  );
+  let result = courses.value;
+
+  // Apply search filter
+  if (searchQuery.value) {
+    result = result.filter(course =>
+      course.Name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+
+  // Apply department filter if any departments are selected
+  if (selectedDepartments.value.length > 0) {
+    result = result.filter(course => selectedDepartments.value.includes(course.department));
+  }
+
+  // Apply level filter if any levels are selected
+  if (selectedLevels.value.length > 0) {
+    result = result.filter(course => selectedLevels.value.includes(course.level));
+  }
+
+  return result;
 });
 
 const totalPages = computed(() => {
@@ -81,15 +114,119 @@ const closeModal = () => {
   retrieveCourses();
 };
 
+function deleteCourse(item) {
+  if (confirm(`Are you sure you want to delete ${item.Name}?`)) {
+    courseServices.deleteCourse(item.id)
+      .then(() => {
+        courses.value = courses.value.filter(course => course.id !== item.id);
+        alert(`${item.Name} has been deleted successfully!`);
+        retrieveCourses();
+      })
+      .catch((e) => {
+        message.value = e.response.data.message;
+      });
+  }
+}
+
+const triggerFileInput = () => {
+  fileInput.value.value = ''; // Reset the input value
+  fileInput.value.click();
+};
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target.result;
+      processCSV(contents);
+    };
+    reader.readAsText(file);
+  }
+};
+
+const processCSV = (contents) => {
+  const lines = contents.split('\n').filter(line => line.trim() !== '');
+  if (lines.length < 2) {
+    alert('CSV file is empty or missing data.');
+    return;
+  }
+
+  const headers = lines[0].split(',').map(header => header.trim());
+  const coursesToCreate = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const data = lines[i].split(',');
+    if (data.length === headers.length) {
+      const course = {};
+      for (let j = 0; j < headers.length; j++) {
+        course[headers[j]] = data[j].trim();
+      }
+      coursesToCreate.push(course);
+    } else {
+      alert(`Invalid data format on line ${i + 1}.`);
+      return;
+    }
+  }
+
+  createCoursesSequentially(coursesToCreate);
+};
+
+const createCoursesSequentially = async (courses) => {
+  let allSuccessful = true;
+  const errorMessages = [];
+
+  for (const course of courses) {
+    try {
+      await courseServices.createCourse(course);
+    } catch (e) {
+      allSuccessful = false;
+      const errorMessage = e.response?.data?.message || e.message || 'Unknown error';
+      errorMessages.push(`Failed to import course "${course.Name}": ${errorMessage}`);
+    }
+  }
+
+  if (allSuccessful) {
+    retrieveCourses();
+    alert('Courses imported successfully!');
+  } else {
+    retrieveCourses(); // Refresh to show any successfully imported courses
+    alert('Some courses failed to import:\n' + errorMessages.join('\n'));
+  }
+};
+
+// Function to be called when filters are applied or cleared
+const onFiltersUpdated = (departments, levels) => {
+  selectedDepartments.value = departments;
+  selectedLevels.value = levels;
+};
+
 retrieveCourses();
 </script>
 
 <template>
   <div class="course-container">
     <h2>Courses</h2>
-    <input v-model="searchQuery" type="text" placeholder="Search courses by Name" class="search-input"/>  <!-- Search input -->
-    <br>
-    <button @click="openModal" class="btn btn-maroon">Add New Course</button>
+    <div class="search-and-filter">
+      <input v-model="searchQuery" type="text" placeholder="Search courses by Name" class="search-input"/>
+    </div>
+    <div class="button-group">
+      <button @click="openModal" class="btn btn-maroon">Add New Course</button>
+      <button @click="triggerFileInput" class="btn btn-green">Import Courses</button>
+    </div>
+    <!-- Hidden file input -->
+    <input type="file" ref="fileInput" accept=".csv" @change="handleFileUpload" style="display: none;"/>
+
+    <!-- Filter Modal Component -->
+    <FilterModal
+      v-if="showFilterModal"
+      :departments="departments"
+      :levels="levels"
+      :selected-departments="selectedDepartments"
+      :selected-levels="selectedLevels"
+      @apply-filters="onFiltersUpdated"
+      @close-modal="showFilterModal = false"
+    />
 
     <AddCourseModal 
       :showModal="showModal" 
@@ -108,7 +245,7 @@ retrieveCourses();
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in paginatedCourses" :key="item.title">
+              <tr v-for="item in paginatedCourses" :key="item.id">
                 <td>{{ item.Name }}</td>
                 <td>
                   <i class="fas fa-pencil-alt mx-4" @click="editCourse(item)"></i>
@@ -153,9 +290,6 @@ retrieveCourses();
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
-}
-
-.course-container {
   margin-top: 80px;
 }
 
@@ -167,6 +301,33 @@ retrieveCourses();
 
 .btn-maroon:hover {
   background-color: #5c0000;
+}
+
+.btn-green {
+  background-color: #008000;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-green:hover {
+  background-color: #005c00;
+}
+
+.btn-default {
+  background-color: #ccc;
+  color: #333;
+  font-weight: bold;
+}
+
+.btn-default:hover {
+  background-color: #999;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 h2 {
@@ -210,13 +371,29 @@ h2 {
   font-weight: bold;
 }
 
-/* Additional style for the search input */
-.search-input {
+.search-and-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 20px;
+}
+
+.search-input {
   padding: 10px;
   width: 100%;
   max-width: 300px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.filter-icon {
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 1.5em;
+  color: #800000;
+}
+
+.filter-icon:hover {
+  color: #5c0000;
 }
 </style>
