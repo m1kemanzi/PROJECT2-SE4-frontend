@@ -39,6 +39,8 @@ const paginatedCourses = computed(() => {
   return filteredCourses.value.slice(start, end);
 });
 
+console.log(paginatedCourses)
+
 const pageNumbers = computed(() => {
   let startPage = Math.max(currentPage.value - Math.floor(maxVisiblePages / 2), 1);
   let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages.value);
