@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed } from "vue";
 import courseServices from "../services/courseServices.js";
-import AddCourseModal from "../components/newCourse.vue"; 
-
-
+import AddCourseModal from "../components/newCourse.vue";
+import CourseDetailsModal from "../components/ViewCourseModal.vue";
 const courses = ref([]);
 const message = ref("Search, Edit or Delete Courses");
 const searchQuery = ref("");
 
 const showModal = ref(false);
+const showCourseModal = ref(false);  // To show course details modal
 const showFilterModal = ref(false); // Controls the visibility of the filter modal
 const currentPage = ref(1);
 const coursesPerPage = 8;
@@ -75,6 +75,8 @@ const paginatedCourses = computed(() => {
   const end = start + coursesPerPage;
   return filteredCourses.value.slice(start, end);
 });
+
+console.log(paginatedCourses)
 
 const pageNumbers = computed(() => {
   let startPage = Math.max(currentPage.value - Math.floor(maxVisiblePages / 2), 1);
@@ -214,6 +216,12 @@ const editCourse = (course) => {
   showModal.value = true; // Open the modal for editing
 };
 
+const viewCourse = (course) => {
+  selectedCourse.value = course;  // Assign the selected course to `selectedCourse`
+  showCourseModal.value = true;   // Open the modal
+};
+
+
 retrieveCourses();
 </script>
 
@@ -248,6 +256,13 @@ retrieveCourses();
       @close-modal="closeModal"
       @add-course="retrieveCourses"  
       @update-course="retrieveCourses" 
+    />
+
+    <CourseDetailsModal 
+      v-if="showCourseModal" 
+      :course="selectedCourse" 
+      :showModal="showCourseModal"
+      @close-modal="showCourseModal = false"
     />
 
     <div class="container">
