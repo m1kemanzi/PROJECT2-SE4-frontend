@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import courseServices from "../services/courseServices.js";
-import AddCourseModal from "../components/newCourse.vue";
+import AddCourseModal from "../components/newCourse.vue"; 
+
+
 const courses = ref([]);
 const message = ref("Search, Edit or Delete Courses");
 const searchQuery = ref("");
@@ -16,6 +18,8 @@ const selectedDepartments = ref([]); // Stores selected departments for filterin
 const selectedLevels = ref([]);      // Stores selected levels for filtering
 
 const fileInput = ref(null);
+const selectedCourse = ref(null); // Stores the course to be edited
+const isEditing = ref(false); // Flag to determine if in editing mode
 
 const retrieveCourses = () => {
   courseServices.getAllCourses()
@@ -105,11 +109,15 @@ const prevPage = () => {
 
 const openModal = () => {
   showModal.value = true;
+  isEditing.value = false;
+  selectedCourse.value = null;
 };
 
 const closeModal = () => {
   showModal.value = false;
   retrieveCourses();
+  selectedCourse.value = null; // Reset selectedCourse when closing
+  isEditing.value = false; // Reset editing mode
 };
 
 function deleteCourse(item) {
@@ -199,6 +207,13 @@ const onFiltersUpdated = (departments, levels) => {
   selectedLevels.value = levels;
 };
 
+// Edit Course Functionality
+const editCourse = (course) => {
+  isEditing.value = true;
+  selectedCourse.value = course;
+  showModal.value = true; // Open the modal for editing
+};
+
 retrieveCourses();
 </script>
 
@@ -228,7 +243,11 @@ retrieveCourses();
 
     <AddCourseModal 
       :showModal="showModal" 
+      :courseData="selectedCourse"  
+      :isEditing="isEditing"        
       @close-modal="closeModal"
+      @add-course="retrieveCourses"  
+      @update-course="retrieveCourses" 
     />
 
     <div class="container">
