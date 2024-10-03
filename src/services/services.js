@@ -1,6 +1,11 @@
 import axios from "axios";
 
-var baseurl = "http://localhost:3017/course-t7";
+var baseurl = "";
+if (import.meta.env.DEV) {
+  baseurl = "http://localhost:3017/course-t7";
+} else {
+  baseurl = "/course-t7/";
+}
 
 
 const apiClient = axios.create({
