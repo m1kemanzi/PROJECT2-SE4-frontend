@@ -171,19 +171,19 @@ const processCSV = (contents) => {
   const coursesToCreate = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const data = lines[i].split(',');
+    const data = lines[i].split(',', 6);
     if (data.length === headers.length) {
       const course = {};
       for (let j = 0; j < headers.length; j++) {
         course[headers[j]] = data[j].trim();
       }
       coursesToCreate.push(course);
+      
     } else {
       alert(`Invalid data format on line ${i + 1}.`);
       return;
     }
   }
-
   createCoursesSequentially(coursesToCreate);
 };
 
@@ -191,6 +191,9 @@ const processCSV = (contents) => {
 const createCoursesSequentially = async (courses) => {
   let allSuccessful = true;
   const errorMessages = [];
+
+  // Show the overlay
+  document.getElementById('overlay').style.display = 'flex';
 
   for (const course of courses) {
     try {
@@ -201,6 +204,9 @@ const createCoursesSequentially = async (courses) => {
       errorMessages.push(`Failed to import course "${course.Name}": ${errorMessage}`);
     }
   }
+
+  // Hide the overlay
+  document.getElementById('overlay').style.display = 'none';
 
   if (allSuccessful) {
     retrieveCourses();
@@ -301,6 +307,10 @@ retrieveCourses();
           </table>
         </div>
       </div>
+      <div id="overlay" class="overlay" style="display: none;">
+  <div class="loader"></div>
+</div>
+
 
       <div class="pagination">
         <button @click="prevPage" :disabled="currentPage === 1" class="arrow-button">
@@ -440,4 +450,31 @@ h2 {
 .filter-icon:hover {
   color: #5c0000;
 }
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Gray out effect */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it appears above other content */
+}
+
+.loader {
+  border: 8px solid #f3f3f3; /* Light gray */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 50px; /* Size of the loader */
+  height: 50px; /* Size of the loader */
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 </style>
