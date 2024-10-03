@@ -16,7 +16,7 @@ const coursesPerPage = 8;
 const maxVisiblePages = 5;
 
 const selectedDepartments = ref([]); // Stores selected departments for filtering
-const selectedLevels = ref([]);      // Stores selected levels for filtering
+const selectedLevels = ref([]);      // Stores selected levels for filtering.
 
 const fileInput = ref(null);
 
