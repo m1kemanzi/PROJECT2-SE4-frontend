@@ -3,6 +3,8 @@ import { ref, computed } from "vue";
 import courseServices from "../services/courseServices.js";
 import AddCourseModal from "../components/newCourse.vue";
 import CourseDetailsModal from "../components/ViewCourseModal.vue";
+import UpdateCourseModal from "../components/updateCourse.vue";  // Import the update course modal
+
 const courses = ref([]);
 const message = ref("Search, Edit or Delete Courses");
 const searchQuery = ref("");
@@ -10,7 +12,8 @@ const searchQuery = ref("");
 const showModal = ref(false);
 const showCourseModal = ref(false);  // To show course details modal
 const selectedCourse = ref(null);    // To hold the selected course data
-const showFilterModal = ref(false); // Controls the visibility of the filter modal
+const showUpdateModal = ref(false);  // To control the visibility of the update modal
+const showFilterModal = ref(false);   // Controls the visibility of the filter modal
 const currentPage = ref(1);
 const coursesPerPage = 8;
 const maxVisiblePages = 5;
@@ -20,6 +23,7 @@ const selectedLevels = ref([]);      // Stores selected levels for filtering.
 
 const fileInput = ref(null);
 
+// Retrieve courses from the API
 const retrieveCourses = () => {
   courseServices.getAllCourses()
     .then((response) => {
@@ -42,6 +46,7 @@ const levels = computed(() => {
   return Array.from(levelSet);
 });
 
+// Filtered courses based on search query and selected filters
 const filteredCourses = computed(() => {
   let result = courses.value;
 
@@ -65,18 +70,19 @@ const filteredCourses = computed(() => {
   return result;
 });
 
+// Calculate total pages for pagination
 const totalPages = computed(() => {
   return Math.ceil(filteredCourses.value.length / coursesPerPage);
 });
 
+// Paginate courses for display
 const paginatedCourses = computed(() => {
   const start = (currentPage.value - 1) * coursesPerPage;
   const end = start + coursesPerPage;
   return filteredCourses.value.slice(start, end);
 });
 
-console.log(paginatedCourses)
-
+// Pagination number logic
 const pageNumbers = computed(() => {
   let startPage = Math.max(currentPage.value - Math.floor(maxVisiblePages / 2), 1);
   let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages.value);
@@ -96,6 +102,7 @@ const pageNumbers = computed(() => {
   };
 });
 
+// Page change functions
 const changePage = (page) => {
   if (page > 0 && page <= totalPages.value) currentPage.value = page;
 };
@@ -108,6 +115,7 @@ const prevPage = () => {
   if (currentPage.value > 1) currentPage.value--;
 };
 
+// Open and close modal functions
 const openModal = () => {
   showModal.value = true;
 };
@@ -117,6 +125,7 @@ const closeModal = () => {
   retrieveCourses();
 };
 
+// Delete course function
 function deleteCourse(item) {
   if (confirm(`Are you sure you want to delete ${item.Name}?`)) {
     courseServices.deleteCourse(item.id)
@@ -131,11 +140,13 @@ function deleteCourse(item) {
   }
 }
 
+// Trigger file input for uploading courses
 const triggerFileInput = () => {
   fileInput.value.value = ''; // Reset the input value
   fileInput.value.click();
 };
 
+// Handle file upload
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -148,6 +159,7 @@ const handleFileUpload = (event) => {
   }
 };
 
+// Process the CSV file for courses
 const processCSV = (contents) => {
   const lines = contents.split('\n').filter(line => line.trim() !== '');
   if (lines.length < 2) {
@@ -175,6 +187,7 @@ const processCSV = (contents) => {
   createCoursesSequentially(coursesToCreate);
 };
 
+// Sequentially create courses from the CSV data
 const createCoursesSequentially = async (courses) => {
   let allSuccessful = true;
   const errorMessages = [];
@@ -198,17 +211,23 @@ const createCoursesSequentially = async (courses) => {
   }
 };
 
-// Function to be called when filters are applied or cleared
+// Update filters
 const onFiltersUpdated = (departments, levels) => {
   selectedDepartments.value = departments;
   selectedLevels.value = levels;
 };
 
+// View course details
 const viewCourse = (course) => {
-  selectedCourse.value = course;  // Assign the selected course to `selectedCourse`
+  selectedCourse.value = course;  // Assign the selected course to selectedCourse
   showCourseModal.value = true;   // Open the modal
 };
 
+// Edit course
+const editCourse = (course) => {
+  selectedCourse.value = course; // Set the selected course for editing
+  showUpdateModal.value = true;   // Show the update modal
+};
 
 retrieveCourses();
 </script>
@@ -247,6 +266,15 @@ retrieveCourses();
       :course="selectedCourse" 
       :showModal="showCourseModal"
       @close-modal="showCourseModal = false"
+    />
+
+    <!-- Update Course Modal -->
+    <UpdateCourseModal 
+      v-if="showUpdateModal" 
+      :course="selectedCourse" 
+      :showModal="showUpdateModal" 
+      @close-modal="showUpdateModal = false"
+      @course-updated="retrieveCourses"
     />
 
     <div class="container">
