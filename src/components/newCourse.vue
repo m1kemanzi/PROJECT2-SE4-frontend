@@ -61,7 +61,7 @@
           Name: "",
           Description: ""
         },
-        isSubmitting: false // Prevents multiple submissions
+        isSubmitting: false // Prevents multiple submissions.
       };
     },
     methods: {
