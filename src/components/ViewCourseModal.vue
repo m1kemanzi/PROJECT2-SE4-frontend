@@ -15,7 +15,7 @@
   <script setup>
   defineProps({
     course: Object,   // The selected course to display
-    showModal: Boolean // Controls modal visibility
+    showModal: Boolean // Controls modal visibility.
   });
   </script>
   
