@@ -1,16 +1,21 @@
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
 
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import dns from "dns";
+dns.setDefaultResultOrder("verbatim");
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    vue(),
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
-})
+export default () => {
+  const baseURL =
+    process.env.APP_ENV === "development" ? "/" : "/2024/project2/t7";
+
+  return defineConfig({
+    plugins: [vue(),],
+
+    server: {
+      host: "localhost",
+      port: 8081,
+    },
+
+    base: baseURL,
+  });
+};
