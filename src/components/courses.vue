@@ -298,9 +298,9 @@ retrieveCourses();
               <tr v-for="item in paginatedCourses" :key="item.id">
                 <td>{{ item.Name }}</td>
                 <td>
-                  <i class="fas fa-pencil-alt mx-4" @click="editCourse(item)"></i>
-                  <i class="fas fa-list-ul mx-4" @click="viewCourse(item)"></i>
-                  <i class="fas fa-trash mx-4" @click="deleteCourse(item)"></i>
+                  <i class="fas fa-pencil-alt mx-4 icon-hover" @click="editCourse(item)"></i>
+                  <i class="fas fa-list-ul mx-4 icon-hover" @click="viewCourse(item)"></i>
+                  <i class="fas fa-trash mx-4 icon-hover" @click="deleteCourse(item)"></i>
                 </td>
               </tr>
             </tbody>
@@ -476,5 +476,15 @@ h2 {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.icon-hover {
+  transition: color 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+
+.icon-hover:hover {
+  transform: scale(1.2); /* Enlarge the icon slightly on hover */
+}
+
 
 </style>
